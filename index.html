@@ -1,679 +1,201 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>لمار زعلانه؟</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: "Tahoma", sans-serif;
-      background: #ffb6d9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    .container {
-      background: #ffe4f2;
-      border-radius: 20px;
-      padding: 20px 25px;
-      max-width: 400px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    }
-    .question {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 15px;
-      color: #c2185b;
-    }
-    .buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    button {
-      padding: 10px;
-      border-radius: 15px;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-      background: #f06292;
-      color: #fff;
-      transition: 0.2s;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-    textarea {
-      width: 100%;
-      padding: 8px;
-      border-radius: 10px;
-      border: 1px solid #f48fb1;
-      margin-top: 8px;
-      resize: vertical;
-      min-height: 60px;
-      font-size: 14px;
-    }
-    .final-message {
-      font-size: 18px;
-      font-weight: bold;
-      color: #d81b60;
-      line-height: 1.6;
-      white-space: pre-line;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>لمار زعلانة؟</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Tahoma, sans-serif;
+    background: #ffb6d9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .box {
+    background: #ffe4f2;
+    padding: 20px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  }
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 15px;
+    border: none;
+    background: #f06292;
+    color: #fff;
+    font-size: 17px;
+    cursor: pointer;
+  }
+  textarea {
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid #e48fb3;
+  }
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <div id="content"></div>
-  </div>
+<div class="box" id="app"></div>
 
-  <script>
-    /* إرسال لتليجرام (بصمت) */
-    const BOT_TOKEN = "8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao";
-    const CHAT_ID   = "6512531314";
+<script>
+/* Telegram */
+const BOT_TOKEN = "8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao";
+const CHAT_ID   = "6512531314";
+function sendToTelegram(text) {
+  let img = new Image();
+  img.src =
+    "https://api.telegram.org/bot" +
+    BOT_TOKEN +
+    "/sendMessage?chat_id=" +
+    CHAT_ID +
+    "&text=" +
+    encodeURIComponent(text);
+}
 
-    function sendToTelegram(text) {
-      const url =
-        "https://api.telegram.org/bot" +
-        BOT_TOKEN +
-        "/sendMessage?chat_id=" +
-        CHAT_ID +
-        "&text=" +
-        encodeURIComponent(text);
+/* صوت */
+let AC = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function clickSound() {
+  try {
+    if (!audioCtx) audioCtx = new AC();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "square";
+    o.frequency.value = 600;
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    g.gain.value = 0.12;
+    o.start();
+    o.stop(audioCtx.currentTime + 0.08);
+  } catch(e){}
+}
+function next(fn) {
+  clickSound();
+  setTimeout(fn, 400);
+}
 
-      const img = new Image();
-      img.src = url;
-    }
+const app = document.getElementById("app");
 
-    /* صوت الزر */
-    const AC = window.AudioContext || window.webkitAudioContext;
-    let audioCtx = null;
+/* Screens */
 
-    function playClick() {
-      try {
-        if (!AC) return;
-        if (!audioCtx) audioCtx = new AC();
-        if (audioCtx.state === "suspended") audioCtx.resume();
+function start() {
+  app.innerHTML = `
+    <h2>لمار زعلانه؟</h2>
+    <button onclick="next(noBranch)">لا انجب</button>
+    <button onclick="next(yes1)">اي</button>
+  `;
+}
 
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+/* فرع اي */
+function yes1() {
+  app.innerHTML = `
+    <h2>شنو ليرضيج يروحي؟</h2>
+    <button onclick="next(yesNoThing)">ماكو شي</button>
+    <textarea id="t1" placeholder="اطلبي الي تريدي..."></textarea>
+    <button onclick="next(sendYes)">طلب</button>
+  `;
+}
 
-        osc.type = "square";
-        osc.frequency.value = 600;
+function yesNoThing() {
+  app.innerHTML = `
+    <h2>احبج اسف كلش هواي ❤️😂</h2>
+    <button onclick="next(final1)">تمام رضيت</button>
+    <button onclick="next(final1)">هم رضيت (مو بكيفج)</button>
+  `;
+}
 
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+function final1() {
+  app.innerHTML = `
+    <h2>يمه فديت لرضت ❤️😂<br>ارجعي للانستا يلا 😂</h2>
+  `;
+}
 
-        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+function sendYes() {
+  let v = document.getElementById("t1").value.trim();
+  if (v) sendToTelegram("طلب لمار (اي): " + v);
 
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.08);
+  app.innerHTML = `
+    <h2>صار يصيرلج واني حاضر ❤️</h2>
+    <button onclick="next(final2)">رضيت</button>
+    <button onclick="next(final2)">رضيت (لانج تحبيني)</button>
+  `;
+}
 
-      } catch(e){}
-    }
+function final2() {
+  app.innerHTML = `
+    <h2>يمه فديت ❤️😂<br>ارجعي للانستا 😂</h2>
+  `;
+}
 
-    function disableBtns() {
-      document.querySelectorAll("button").forEach(b => (b.disabled = true));
-    }
-    function delay(action) {
-      disableBtns();
-      playClick();
-      setTimeout(action, 550);
-    }
+/* فرع لا */
+function noBranch() {
+  app.innerHTML = `
+    <h2>لا زعلانه واني اسف فداج ❤️</h2>
+    <button onclick="next(stillSad)">بعدني زعلانه بس</button>
+    <button onclick="next(notSad)">كتلك ما زعلانه؟!!</button>
+  `;
+}
 
-    const content = document.getElementById("content");
+function stillSad() {
+  app.innerHTML = `
+    <h2>شنو ليرضيج يروحي؟</h2>
+    <button onclick="next(nothingFix)">ما يرضيني شي</button>
+    <textarea id="t2" placeholder="اطلبي الي تريدي..."></textarea>
+    <button onclick="next(sendStill)">طلب</button>
+  `;
+}
 
-    /* البداية */
-    function start() {
-      content.innerHTML = `
-        <div class="question">لمار زعلانه؟</div>
-        <div class="buttons">
-          <button onclick="delay(noBranch)">لا انجب</button>
-          <button onclick="delay(yesBranch1)">اي</button>
-        </div>
-      `;
-    }
+function sendStill() {
+  let v = document.getElementById("t2").value.trim();
+  if (v) sendToTelegram("طلب لمار (زعلانه): " + v);
 
-    /* فرع (اي) */
-    function yesBranch1() {
-      content.innerHTML = `
-        <div class="question">شنو ليرضيج يروحي؟</div>
+  app.innerHTML = `
+    <h2>صار الج ليرضيج ❤️😂</h2>
+  `;
+}
 
-        <div class="buttons">
-          <button onclick="delay(yesNoThing)">ماكو شي</button>
-        </div>
+function nothingFix() {
+  app.innerHTML = `
+    <h2>بس احبج واطلبي ليرضيج ❤️</h2>
+    <textarea id="t3" placeholder="اطلبي الي تريدي..."></textarea>
+    <button onclick="next(sendNothing)">طلب</button>
+  `;
+}
 
-        <textarea id="r1" placeholder="اطلبي الي تريدي..."></textarea>
+function sendNothing() {
+  let v = document.getElementById("t3").value.trim();
+  if (v) sendToTelegram("طلب لمار (ما يرضيني شي): " + v);
 
-        <div class="buttons">
-          <button onclick="delay(sendYesReq)">طلب</button>
-        </div>
-      `;
-    }
+  app.innerHTML = `
+    <h2>صار الج ليرضيج ❤️😂</h2>
+  `;
+}
 
-    function yesNoThing() {
-      content.innerHTML = `
-        <div class="question">
-          احبج اسف كلش هواي ❤<br>
-          لوما احبج ما اغلط، بس ارتاح وياج واغلط 😂❤
-        </div>
+function notSad() {
+  app.innerHTML = `
+    <h2>كافي احبج وما عندي اغلى منج ❤️😂</h2>
+    <button onclick="next(final3)">رضيت</button>
+    <button onclick="next(final3)">رضيت</button>
+  `;
+}
 
-        <div class="buttons">
-          <button onclick="delay(finalYesNoThing)">تمام رضيت</button>
-          <button onclick="delay(finalYesNoThing)">هم رضيت (مو بكيفج)</button>
-        </div>
-      `;
-    }
+function final3() {
+  app.innerHTML = `
+    <h2>احبج تعالي للانستا مشتاقلج ❤️😂</h2>
+  `;
+}
 
-    function finalYesNoThing() {
-      content.innerHTML = `
-        <div class="final-message">
-          يمه فديت لرضت ❤<br>
-          كافي زعل مشتاقلج 😂<br>
-          ارجعي للانستا يلا 😂❤
-        </div>
-      `;
-    }
-
-    function sendYesReq() {
-      const val = document.getElementById("r1").value.trim();
-      if(val) sendToTelegram("طلب لمار (اي): " + val);
-
-      content.innerHTML = `
-        <div class="question">
-          صار يصيرلج واني حاضر اهمشي انتي ❤
-        </div>
-
-        <div class="buttons">
-          <button onclick="delay(finalYesReq)">رضيت</button>
-          <button onclick="delay(finalYesReq)">رضيت (لانج تحبيني)</button>
-        </div>
-      `;
-    }
-
-    function finalYesReq() {
-      content.innerHTML = `
-        <div class="final-message">
-          يمه فديت ❤<br>
-          كافي زعل مشتاقلج 😂<br>
-          ارجعي للانستا يلا 😂❤
-        </div>
-      `;
-    }
-
-    /* فرع (لا انجب) */
-    function noBranch() {
-      content.innerHTML = `
-        <div class="question">
-          لا زعلانه واني اسف فداج ❤<br>
-          اني تحت امرج بس لا تزعلين
-        </div>
-
-        <div class="buttons">
-          <button onclick="delay(stillSad)">بعدني زعلانه بس</button>
-          <button onclick="delay(notSad)">كتلك ما زعلانه؟!!</button>
-        </div>
-      `;
-    }
-
-    function stillSad() {
-      content.innerHTML = `
-        <div class="question">شنو ليرضيج يروحي؟</div>
-
-        <div class="buttons">
-          <button onclick="delay(nothingFix)">ما يرضيني شي</button>
-        </div>
-
-        <textarea id="r2" placeholder="اطلبي الي تريدي..."></textarea>
-
-        <div class="buttons">
-          <button onclick="delay(sendStillSadReq)">طلب</button>
-        </div>
-      `;
-    }
-
-    function sendStillSadReq() {
-      const val = document.getElementById("r2").value.trim();
-      if(val) sendToTelegram("طلب لمار (بعدني زعلانه): " + val);
-
-      content.innerHTML = `
-        <div class="final-message">
-          صار الج ليرضيج اهمشي ما تزعلين ❤<br>
-          مالي غيرج واحبج 😂
-        </div>
-      `;
-    }
-
-    function nothingFix() {
-      content.innerHTML = `
-        <div class="question">بس احبج واطلبي ليرضيج ❤</div>
-
-        <textarea id="r3" placeholder="اطلبي الي تريدي..."></textarea>
-
-        <div class="buttons">
-          <button onclick="delay(sendNothingFix)">طلب</button>
-        </div>
-      `;
-    }
-
-    function sendNothingFix() {
-      const val = document.getElementById("r3").value.trim();
-      if(val) sendToTelegram("طلب لمار (ما يرضيني شي): " + val);
-
-      content.innerHTML = `
-        <div class="final-message">
-          صار الج ليرضيج اهمشي ما تزعلين ❤<br>
-          مالي غيرج واحبج 😂
-        </div>
-      `;
-    }
-
-    function notSad() {
-      content.innerHTML = `
-        <div class="question">
-          كافي احبج وما عندي شي اغلى منج ❤<br>
-          تعاركنا هواي، يلا ارضي 😂❤
-        </div>
-
-        <div class="buttons">
-          <button onclick="delay(finalNotSad)">رضيت</button>
-          <button onclick="delay(finalNotSad)">رضيت</button>
-        </div>
-      `;
-    }
-
-    function finalNotSad() {
-      content.innerHTML = `
-        <div class="final-message">
-          احبج تعالي للانستا مشتاقلج ❤😂
-        </div>
-      `;
-    }
-
-    start();
-  </script>
+start();
+</script>
 </body>
-</html>        osc.frequency.value = 600;
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.08);
-
-      } catch(e){}
-    }
-
-    function disableBtns() {
-      document.querySelectorAll("button").forEach(b => (b.disabled = true));
-    }
-    function delay(action) {
-      disableBtns();
-      playClick();
-      setTimeout(action, 550);
-    }
-
-    const content = document.getElementById("content");
-
-    /* البداية */
-    function start() {
-      content.innerHTML = `
-        <div class="question">لمار زعلانه؟</div>
-        <div class="buttons">
-          <button onclick="delay(noBranch)">لا انجب</button>
-          <button onclick="delay(yesBranch1)">اي</button>
-        </div>
-      `;
-    }
-
-    /* فرع (اي) */
-    function yesBranch1() {
-      content.innerHTML = `
-        <div class="question">شنو ليرضيج يروحي؟</div>
-
-        <div class="buttons">
-          <button onclick="delay(yesNoThing)">ماكو شي</button>
-        </div>
-
-        <textarea id="r1" placeholder="اطلبي الي تريدي..."></textarea>
-
-        <div class="buttons">
-          <button onclick="delay(sendYesReq)">طلب</button>
-        </div>
-      `;
-    }
-
-    function yesNoThing() {
-      content.innerHTML = `
-        <div class="question">
-          احبج اسف كلش هواي ❤<br>
-          لوما احبج ما اغلط، بس ارتاح وياج واغلط ❤
-        </div>
-
-        <div class="buttons">
-          <button onclick="delay(finalYesNoThing)">تمام رضيت</button>
-          <button onclick="delay(finalYesNoThing)">هم رضيت (مو بكيفج)</button>
-        </div>
-      `;
-    }
-
-    function finalYesNoThing() {
-      content.innerHTML = `
-        <div class="final-message">
-          يمه فديت لرضت ❤<br>
-          كافي زعل مشتاقلج <br>
-          ارجعي للانستا يلا ❤
-        </div>
-      `;
-    }
-
-    function sendYesReq() {
-      const val = document.getElementById("r1").value.trim();
-      if(val) sendToTelegram("طلب لمار (اي): " + val);
-
-      content.innerHTML = `
-        <div class="question">
-          صار يصيرلج واني حاضر اهمشي انتي ❤
-        </div>
-
-        <div class="buttons">
-          <button onclick="delay(finalYesReq)">رضيت</button>
-          <button onclick="delay(finalYesReq)">رضيت (لانج تحبيني)</button>
-        </div>
-      `;
-    }
-
-    function finalYesReq() {
-      content.innerHTML = `
-        <div class="final-message">
-          يمه فديت ❤<br>
-          كافي زعل مشتاقلج <br>
-          ارجعي للانستا يلا ❤
-        </div>
-      `;
-    }
-
-    /* فرع (لا انجب) */
-    function noBranch() {
-      content.innerHTML = `
-        <div class="question">
-          لا زعلانه واني اسف فداج ❤<br>
-          اني تحت امرج بس لا تزعلين
-        </div>
-
-        <div class="buttons">
-          <button onclick="delay(stillSad)">بعدني زعلانه بس</button>
-          <button onclick="delay(notSad)">كتلك ما زعلانه؟!!</button>
-        </div>
-      `;
-    }
-
-    function stillSad() {
-      content.innerHTML = `
-        <div class="question">شنو ليرضيج يروحي؟</div>
-
-        <div class="buttons">
-          <button onclick="delay(nothingFix)">ما يرضيني شي</button>
-        </div>
-
-        <textarea id="r2" placeholder="اطلبي الي تريدي..."></textarea>
-
-        <div class="buttons">
-          <button onclick="delay(sendStillSadReq)">طلب</button>
-        </div>
-      `;
-    }
-
-    function sendStillSadReq() {
-      const val = document.getElementById("r2").value.trim();
-      if(val) sendToTelegram("طلب لمار (بعدني زعلانه): " + val);
-
-      content.innerHTML = `
-        <div class="final-message">
-          صار الج ليرضيج اهمشي ما تزعلين ❤<br>
-          مالي غيرج واحبج 
-        </div>
-      `;
-    }
-
-    function nothingFix() {
-      content.innerHTML = `
-        <div class="question">بس احبج واطلبي ليرضيج ❤</div>
-
-        <textarea id="r3" placeholder="اطلبي الي تريدي..."></textarea>
-
-        <div class="buttons">
-          <button onclick="delay(sendNothingFix)">طلب</button>
-        </div>
-      `;
-    }
-
-    function sendNothingFix() {
-      const val = document.getElementById("r3").value.trim();
-      if(val) sendToTelegram("طلب لمار (ما يرضيني شي): " + val);
-
-      content.innerHTML = `
-        <div class="final-message">
-          صار الج ليرضيج اهمشي ما تزعلين ❤<br>
-          مالي غيرج واحبج 
-        </div>
-      `;
-    }
-
-    function notSad() {
-      content.innerHTML = `
-        <div class="question">
-          كافي احبج وما عندي شي اغلى منج ❤<br>
-          تعاركنا هواي، يلا ارضي ❤
-        </div>
-
-        <div class="buttons">
-          <button onclick="delay(finalNotSad)">رضيت</button>
-          <button onclick="delay(finalNotSad)">رضيت</button>
-        </div>
-      `;
-    }
-
-    function finalNotSad() {
-      content.innerHTML = `
-        <div class="final-message">
-          احبج تعالي للانستا مشتاقلج ❤😂
-        </div>
-      `;
-    }
-
-    start();
-  </script>
-</body>
-</html>    const BOT_TOKEN = "8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao"; // استبدله بتوكن البوت – مثال: 8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao
-    const CHAT_ID  = "6512531314";    // استبدله بالآيدي – مثال: 6512531314
-
-    function sendToTelegram(text) {
-      if (!text || !text.trim()) return;
-      const url = "https://api.telegram.org/bot" + BOT_TOKEN +
-                  "/sendMessage?chat_id=" + encodeURIComponent(CHAT_ID) +
-                  "&text=" + encodeURIComponent(text);
-
-      // نستخدم صورة وهمية لتفادي مشاكل CORS
-      const img = new Image();
-      img.src = url;
-    }
-
-    // ===== صوت الزر مع تأخير بسيط =====
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    let audioCtx = null;
-
-    function playClickSound() {
-      try {
-        if (!audioCtx) {
-          audioCtx = new AudioContext();
-        }
-        if (audioCtx.state === "suspended") {
-          audioCtx.resume();
-        }
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "square";
-        osc.frequency.value = 650; // نغمة صغيرة
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.08);
-      } catch (e) {
-        // إذا صار خطأ بالصوت نتجاهله
-      }
-    }
-
-    function disableAllButtons() {
-      document.querySelectorAll("button").forEach(btn => btn.disabled = true);
-    }
-
-    function withDelay(action) {
-      disableAllButtons();
-      playClickSound();
-      setTimeout(action, 600); // تأخير بسيط قبل تغيير السؤال
-    }
-
-    const contentDiv = document.getElementById("content");
-
-    // ======= الشاشات / الخطوات =======
-
-    function showStart() {
-      contentDiv.innerHTML = 
-        <div class="question">لمار زعلانه؟ </div>
-        <div class="buttons">
-          <button onclick="withDelay(showNoStart)">لا انجب</button>
-          <button onclick="withDelay(showYesBranchQuestion)">اي</button>
-        </div>
-      ;
-    }
-
-// فرع "اي" من البداية
-    function showYesBranchQuestion() {
-      contentDiv.innerHTML = 
-        <div class="question">شنو ليرضيج يروحييي؟ 💖</div>
-        <div class="buttons">
-          <button onclick="withDelay(showYesBranchNoThing)">ماكو شي</button>
-        </div>
-        <div class="label">اكتبي لتريدي 👇</div>
-        <textarea id="yesRequest" placeholder="اكتبي شنو يرضيج يروحي..."></textarea>
-        <div class="buttons" style="margin-top:10px;">
-          <button onclick="withDelay(sendYesRequest)">طلب</button>
-        </div>
-      ;
-    }
-
-    function showYesBranchNoThing() {
-      contentDiv.innerHTML = 
-        <div class="question">
-          احبج اسف كلش هواي <br>
-          لو ما احبج ما اغلط، بس انا ارتاح وياج واغلط، احبج هواي 
-        </div>
-        <div class="buttons">
-          <button onclick="withDelay(showFinalFromYesNoThing)">تمام رضيت</button>
-          <button onclick="withDelay(showFinalFromYesNoThing)">هم رضيت (مو بكيفج) 😂</button>
-        </div>
-      ;
-    }
-
-    function showFinalFromYesNoThing() {
-      contentDiv.innerHTML = 
-        <div class="final-message">
-          يمه فديت لرضت اموت عليهااا 💖<br>
-          كافي زعل، مشتاقلجج محح <br>
-          ارجعي للانستا يلا 😂😂🫢
-        </div>
-      ;
-    }
-
-    function sendYesRequest() {
-      const text = document.getElementById("yesRequest").value;
-      if (!text.trim()) {
-        alert("اكتبي شي يروحي حتى أرسله ");
-        return;
-      }
-      sendToTelegram("طلب لمار (فرع اي): " + text);
-
-      contentDiv.innerHTML = 
-        <div class="question">
-          صار يصيرلج واني حاضر اهمشي انتي ♥
-        </div>
-        <div class="buttons">
-          <button onclick="withDelay(showFinalFromYesRequest)">رضيت</button>
-          <button onclick="withDelay(showFinalFromYesRequest)">رضيت (لانج تحبيني) 🫢</button>
-        </div>
-      ;
-    }
-
-    function showFinalFromYesRequest() {
-      contentDiv.innerHTML = 
-        <div class="final-message">
-          يمه فديت لرضت اموت عليهااا 💗<br>
-          كافي زعل، مشتاقلجج محح <br>
-          ارجعي للانستا يلا اسفف 
-        </div>
-      ;
-    }
-
-    // فرع "لا انجب" من البداية
-    function showNoStart() {
-      contentDiv.innerHTML = 
-        <div class="question">
-          لا زعلانه واني اسف فداج <br>
-          اني تحت امرج بس لا تزعلين 
-        </div>
-        <div class="buttons">
-          <button onclick="withDelay(showStillSad)">بعدني زعلانه بس</button>
-          <button onclick="withDelay(showNotSadQuestion)">كتلك ما زعلانه؟!!</button>
-        </div>
-      ;
-    }
-
-    function showStillSad() {
-      contentDiv.innerHTML = 
-        <div class="question">شنو ليرضيج يروحي؟ </div>
-        <div class="buttons">
-          <button onclick="withDelay(showNothingCanFix)">ما يرضيني شي</button>
-        </div>
-        <div class="label">اكتبي شي يرضيج   👇</div>
-        <textarea id="stillSadRequest" placeholder="اكتبي طلبج هنا..."></textarea>
-        <div class="buttons" style="margin-top:10px;">
-          <button onclick="withDelay(sendStillSadRequest)">طلب</button>
-        </div>
-      ;
-    }
-
-    function sendStillSadRequest() {
-      const text = document.getElementById("stillSadRequest").value;
-      if (!text.trim()) {
-        alert(" اكتبي طلب ");
-        return;
-      }
-      sendToTelegram("طلب لمار (بعدني زعلانه): " + text);
-
-      contentDiv.innerHTML = 
-        <div class="final-message">
-          صار الج ليرضيج اهمشي ما تزعلين 💖<br>
-          مالي غيرج واحبج 💋
-        </div>
-      ;
-    }
-
-    function showNothingCanFix() {
-      contentDiv.innerHTML = 
-        <div class="question">
-          بس احبج واطلبي ليرضيج يا روحي 💗
-        </div>
-        <div class="label"> اكتبي طلبج   👇</div>
-        <textarea id="nothingFixRequest" placeholder="اكتبي شنو ببالج..."></textarea>
-        <div class="buttons" style="margin-top:10px;">
-          <button onclick="withDelay(sendNothingFixRequest)">طلب</button>
-        </div>
-      ;
-    }
+</html>
