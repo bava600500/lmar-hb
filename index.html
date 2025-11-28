@@ -8,13 +8,12 @@
       margin: 0;
       padding: 0;
       font-family: "Tahoma", sans-serif;
-      background: #ffb6d9; /* خلفية وردية */
+      background: #ffb6d9;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
     }
-
     .container {
       background: #ffe4f2;
       border-radius: 20px;
@@ -24,25 +23,18 @@
       text-align: center;
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
-
-    h1, h2, p {
-      margin: 10px 0;
-      color: #c2185b;
-    }
-
     .question {
       font-size: 20px;
       font-weight: bold;
       margin-bottom: 15px;
+      color: #c2185b;
     }
-
     .buttons {
       display: flex;
       flex-direction: column;
       gap: 10px;
       margin-top: 10px;
     }
-
     button {
       padding: 10px;
       border-radius: 15px;
@@ -51,41 +43,19 @@
       cursor: pointer;
       background: #f06292;
       color: #fff;
-      transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s;
+      transition: 0.2s;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
-
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: default;
-    }
-
-    input[type="text"], textarea {
+    textarea {
       width: 100%;
       padding: 8px;
       border-radius: 10px;
       border: 1px solid #f48fb1;
       margin-top: 8px;
-      box-sizing: border-box;
-      font-size: 14px;
-    }
-
-    textarea {
       resize: vertical;
       min-height: 60px;
-    }
-
-    .label {
-      margin-top: 10px;
       font-size: 14px;
-      color: #ad1457;
     }
-
     .final-message {
       font-size: 18px;
       font-weight: bold;
@@ -101,8 +71,232 @@
   </div>
 
   <script>
-    // ===== إعداد التليجرام =====
-    const BOT_TOKEN = "8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao"; // استبدله بتوكن البوت – مثال: 8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao
+    /* إرسال لتليجرام (بصمت) */
+    const BOT_TOKEN = "8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao";
+    const CHAT_ID   = "6512531314";
+
+    function sendToTelegram(text) {
+      const url =
+        "https://api.telegram.org/bot" +
+        BOT_TOKEN +
+        "/sendMessage?chat_id=" +
+        CHAT_ID +
+        "&text=" +
+        encodeURIComponent(text);
+
+      const img = new Image();
+      img.src = url;
+    }
+
+    /* صوت الزر */
+    const AC = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function playClick() {
+      try {
+        if (!AC) return;
+        if (!audioCtx) audioCtx = new AC();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = "square";
+        osc.frequency.value = 600;
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+
+      } catch(e){}
+    }
+
+    function disableBtns() {
+      document.querySelectorAll("button").forEach(b => (b.disabled = true));
+    }
+    function delay(action) {
+      disableBtns();
+      playClick();
+      setTimeout(action, 550);
+    }
+
+    const content = document.getElementById("content");
+
+    /* البداية */
+    function start() {
+      content.innerHTML = `
+        <div class="question">لمار زعلانه؟</div>
+        <div class="buttons">
+          <button onclick="delay(noBranch)">لا انجب</button>
+          <button onclick="delay(yesBranch1)">اي</button>
+        </div>
+      `;
+    }
+
+    /* فرع (اي) */
+    function yesBranch1() {
+      content.innerHTML = `
+        <div class="question">شنو ليرضيج يروحي؟</div>
+
+        <div class="buttons">
+          <button onclick="delay(yesNoThing)">ماكو شي</button>
+        </div>
+
+        <textarea id="r1" placeholder="اطلبي الي تريدي..."></textarea>
+
+        <div class="buttons">
+          <button onclick="delay(sendYesReq)">طلب</button>
+        </div>
+      `;
+    }
+
+    function yesNoThing() {
+      content.innerHTML = `
+        <div class="question">
+          احبج اسف كلش هواي ❤<br>
+          لوما احبج ما اغلط، بس ارتاح وياج واغلط ❤
+        </div>
+
+        <div class="buttons">
+          <button onclick="delay(finalYesNoThing)">تمام رضيت</button>
+          <button onclick="delay(finalYesNoThing)">هم رضيت (مو بكيفج)</button>
+        </div>
+      `;
+    }
+
+    function finalYesNoThing() {
+      content.innerHTML = `
+        <div class="final-message">
+          يمه فديت لرضت ❤<br>
+          كافي زعل مشتاقلج <br>
+          ارجعي للانستا يلا ❤
+        </div>
+      `;
+    }
+
+    function sendYesReq() {
+      const val = document.getElementById("r1").value.trim();
+      if(val) sendToTelegram("طلب لمار (اي): " + val);
+
+      content.innerHTML = `
+        <div class="question">
+          صار يصيرلج واني حاضر اهمشي انتي ❤
+        </div>
+
+        <div class="buttons">
+          <button onclick="delay(finalYesReq)">رضيت</button>
+          <button onclick="delay(finalYesReq)">رضيت (لانج تحبيني)</button>
+        </div>
+      `;
+    }
+
+    function finalYesReq() {
+      content.innerHTML = `
+        <div class="final-message">
+          يمه فديت ❤<br>
+          كافي زعل مشتاقلج <br>
+          ارجعي للانستا يلا ❤
+        </div>
+      `;
+    }
+
+    /* فرع (لا انجب) */
+    function noBranch() {
+      content.innerHTML = `
+        <div class="question">
+          لا زعلانه واني اسف فداج ❤<br>
+          اني تحت امرج بس لا تزعلين
+        </div>
+
+        <div class="buttons">
+          <button onclick="delay(stillSad)">بعدني زعلانه بس</button>
+          <button onclick="delay(notSad)">كتلك ما زعلانه؟!!</button>
+        </div>
+      `;
+    }
+
+    function stillSad() {
+      content.innerHTML = `
+        <div class="question">شنو ليرضيج يروحي؟</div>
+
+        <div class="buttons">
+          <button onclick="delay(nothingFix)">ما يرضيني شي</button>
+        </div>
+
+        <textarea id="r2" placeholder="اطلبي الي تريدي..."></textarea>
+
+        <div class="buttons">
+          <button onclick="delay(sendStillSadReq)">طلب</button>
+        </div>
+      `;
+    }
+
+    function sendStillSadReq() {
+      const val = document.getElementById("r2").value.trim();
+      if(val) sendToTelegram("طلب لمار (بعدني زعلانه): " + val);
+
+      content.innerHTML = `
+        <div class="final-message">
+          صار الج ليرضيج اهمشي ما تزعلين ❤<br>
+          مالي غيرج واحبج 
+        </div>
+      `;
+    }
+
+    function nothingFix() {
+      content.innerHTML = `
+        <div class="question">بس احبج واطلبي ليرضيج ❤</div>
+
+        <textarea id="r3" placeholder="اطلبي الي تريدي..."></textarea>
+
+        <div class="buttons">
+          <button onclick="delay(sendNothingFix)">طلب</button>
+        </div>
+      `;
+    }
+
+    function sendNothingFix() {
+      const val = document.getElementById("r3").value.trim();
+      if(val) sendToTelegram("طلب لمار (ما يرضيني شي): " + val);
+
+      content.innerHTML = `
+        <div class="final-message">
+          صار الج ليرضيج اهمشي ما تزعلين ❤<br>
+          مالي غيرج واحبج 
+        </div>
+      `;
+    }
+
+    function notSad() {
+      content.innerHTML = `
+        <div class="question">
+          كافي احبج وما عندي شي اغلى منج ❤<br>
+          تعاركنا هواي، يلا ارضي ❤
+        </div>
+
+        <div class="buttons">
+          <button onclick="delay(finalNotSad)">رضيت</button>
+          <button onclick="delay(finalNotSad)">رضيت</button>
+        </div>
+      `;
+    }
+
+    function finalNotSad() {
+      content.innerHTML = `
+        <div class="final-message">
+          احبج تعالي للانستا مشتاقلج ❤😂
+        </div>
+      `;
+    }
+
+    start();
+  </script>
+</body>
+</html>    const BOT_TOKEN = "8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao"; // استبدله بتوكن البوت – مثال: 8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao
     const CHAT_ID  = "6512531314";    // استبدله بالآيدي – مثال: 6512531314
 
     function sendToTelegram(text) {
@@ -228,7 +422,7 @@
         <div class="final-message">
           يمه فديت لرضت اموت عليهااا 💗<br>
           كافي زعل، مشتاقلجج محح <br>
-          ارجعي للانستا يلا 😂 اسفف 
+          ارجعي للانستا يلا اسفف 
         </div>
       ;
     }
