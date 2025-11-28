@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>لمار زعلانه؟</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Tahoma", sans-serif;
+      background: #ffb6d9; /* خلفية وردية */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #ffe4f2;
+      border-radius: 20px;
+      padding: 20px 25px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    h1, h2, p {
+      margin: 10px 0;
+      color: #c2185b;
+    }
+
+    .question {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 10px;
+      border-radius: 15px;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      background: #f06292;
+      color: #fff;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #f48fb1;
+      margin-top: 8px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .label {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #ad1457;
+    }
+
+    .final-message {
+      font-size: 18px;
+      font-weight: bold;
+      color: #d81b60;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="content"></div>
+  </div>
+
+  <script>
+    // ===== إعداد التليجرام =====
+    const BOT_TOKEN = "8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao"; // استبدله بتوكن البوت – مثال: 8293492139:AAGJ4GExgETAs_8hPhtBGkf3_Y7UqSlrDao
+    const CHAT_ID  = "6512531314";    // استبدله بالآيدي – مثال: 6512531314
+
+    function sendToTelegram(text) {
+      if (!text || !text.trim()) return;
+      const url = "https://api.telegram.org/bot" + BOT_TOKEN +
+                  "/sendMessage?chat_id=" + encodeURIComponent(CHAT_ID) +
+                  "&text=" + encodeURIComponent(text);
+
+      // نستخدم صورة وهمية لتفادي مشاكل CORS
+      const img = new Image();
+      img.src = url;
+    }
+
+    // ===== صوت الزر مع تأخير بسيط =====
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function playClickSound() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new AudioContext();
+        }
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "square";
+        osc.frequency.value = 650; // نغمة صغيرة
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch (e) {
+        // إذا صار خطأ بالصوت نتجاهله
+      }
+    }
+
+    function disableAllButtons() {
+      document.querySelectorAll("button").forEach(btn => btn.disabled = true);
+    }
+
+    function withDelay(action) {
+      disableAllButtons();
+      playClickSound();
+      setTimeout(action, 600); // تأخير بسيط قبل تغيير السؤال
+    }
+
+    const contentDiv = document.getElementById("content");
+
+    // ======= الشاشات / الخطوات =======
+
+    function showStart() {
+      contentDiv.innerHTML = 
+        <div class="question">لمار زعلانه؟ </div>
+        <div class="buttons">
+          <button onclick="withDelay(showNoStart)">لا انجب</button>
+          <button onclick="withDelay(showYesBranchQuestion)">اي</button>
+        </div>
+      ;
+    }
+
+// فرع "اي" من البداية
+    function showYesBranchQuestion() {
+      contentDiv.innerHTML = 
+        <div class="question">شنو ليرضيج يروحييي؟ 💖</div>
+        <div class="buttons">
+          <button onclick="withDelay(showYesBranchNoThing)">ماكو شي</button>
+        </div>
+        <div class="label">اكتبي لتريدي 👇</div>
+        <textarea id="yesRequest" placeholder="اكتبي شنو يرضيج يروحي..."></textarea>
+        <div class="buttons" style="margin-top:10px;">
+          <button onclick="withDelay(sendYesRequest)">طلب</button>
+        </div>
+      ;
+    }
+
+    function showYesBranchNoThing() {
+      contentDiv.innerHTML = 
+        <div class="question">
+          احبج اسف كلش هواي <br>
+          لو ما احبج ما اغلط، بس انا ارتاح وياج واغلط، احبج هواي 
+        </div>
+        <div class="buttons">
+          <button onclick="withDelay(showFinalFromYesNoThing)">تمام رضيت</button>
+          <button onclick="withDelay(showFinalFromYesNoThing)">هم رضيت (مو بكيفج) 😂</button>
+        </div>
+      ;
+    }
+
+    function showFinalFromYesNoThing() {
+      contentDiv.innerHTML = 
+        <div class="final-message">
+          يمه فديت لرضت اموت عليهااا 💖<br>
+          كافي زعل، مشتاقلجج محح <br>
+          ارجعي للانستا يلا 😂😂🫢
+        </div>
+      ;
+    }
+
+    function sendYesRequest() {
+      const text = document.getElementById("yesRequest").value;
+      if (!text.trim()) {
+        alert("اكتبي شي يروحي حتى أرسله ");
+        return;
+      }
+      sendToTelegram("طلب لمار (فرع اي): " + text);
+
+      contentDiv.innerHTML = 
+        <div class="question">
+          صار يصيرلج واني حاضر اهمشي انتي ♥
+        </div>
+        <div class="buttons">
+          <button onclick="withDelay(showFinalFromYesRequest)">رضيت</button>
+          <button onclick="withDelay(showFinalFromYesRequest)">رضيت (لانج تحبيني) 🫢</button>
+        </div>
+      ;
+    }
+
+    function showFinalFromYesRequest() {
+      contentDiv.innerHTML = 
+        <div class="final-message">
+          يمه فديت لرضت اموت عليهااا 💗<br>
+          كافي زعل، مشتاقلجج محح <br>
+          ارجعي للانستا يلا 😂 اسفف 
+        </div>
+      ;
+    }
+
+    // فرع "لا انجب" من البداية
+    function showNoStart() {
+      contentDiv.innerHTML = 
+        <div class="question">
+          لا زعلانه واني اسف فداج <br>
+          اني تحت امرج بس لا تزعلين 
+        </div>
+        <div class="buttons">
+          <button onclick="withDelay(showStillSad)">بعدني زعلانه بس</button>
+          <button onclick="withDelay(showNotSadQuestion)">كتلك ما زعلانه؟!!</button>
+        </div>
+      ;
+    }
+
+    function showStillSad() {
+      contentDiv.innerHTML = 
+        <div class="question">شنو ليرضيج يروحي؟ </div>
+        <div class="buttons">
+          <button onclick="withDelay(showNothingCanFix)">ما يرضيني شي</button>
+        </div>
+        <div class="label">اكتبي شي يرضيج   👇</div>
+        <textarea id="stillSadRequest" placeholder="اكتبي طلبج هنا..."></textarea>
+        <div class="buttons" style="margin-top:10px;">
+          <button onclick="withDelay(sendStillSadRequest)">طلب</button>
+        </div>
+      ;
+    }
+
+    function sendStillSadRequest() {
+      const text = document.getElementById("stillSadRequest").value;
+      if (!text.trim()) {
+        alert(" اكتبي طلب ");
+        return;
+      }
+      sendToTelegram("طلب لمار (بعدني زعلانه): " + text);
+
+      contentDiv.innerHTML = 
+        <div class="final-message">
+          صار الج ليرضيج اهمشي ما تزعلين 💖<br>
+          مالي غيرج واحبج 💋
+        </div>
+      ;
+    }
+
+    function showNothingCanFix() {
+      contentDiv.innerHTML = 
+        <div class="question">
+          بس احبج واطلبي ليرضيج يا روحي 💗
+        </div>
+        <div class="label"> اكتبي طلبج   👇</div>
+        <textarea id="nothingFixRequest" placeholder="اكتبي شنو ببالج..."></textarea>
+        <div class="buttons" style="margin-top:10px;">
+          <button onclick="withDelay(sendNothingFixRequest)">طلب</button>
+        </div>
+      ;
+    }
